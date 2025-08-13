@@ -1,10 +1,10 @@
 
 ## About "SkillDEV" 
 
-An online Book shop, backend was developed using Laravel framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects.
+An online Book shop, backend was developed using Laravel framework with expressive, elegant syntax to connect book lovers with newest books in technology like web development, mobiel,AI and soft skills. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects.
 
 ## Project services
-userfriendly digital platform that connects book lovers with newest books in web development, mobie and AI.
+Userfriendly digital platform that connects book lovers with newest books in web development, mobie and AI.
 
 ### For Customers
 1. Search by title, author, genre, or keywords.
