@@ -6,13 +6,13 @@ An online Book shop, backend was developed using Laravel framework with expressi
 ## Project services
 userfriendly digital platform that connects book lovers with newest books in web development, mobie and AI.
 
-For Customers
+### For Customers
 1. Search by title, author, genre, or keywords.
 2. Filter by price, ratings, or new releases.
 3. Recommend books based on browsing/purchase history.
 4.Order tracking and history.
 
-For Sellers/Admin
+### For Sellers/Admin
 1. Inventory Management:
 2. Add/edit books, categories.
 3. Track stock levels and automate restocking alerts.
