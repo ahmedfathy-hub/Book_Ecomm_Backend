@@ -2,18 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $fillable = [
-        'user_id', 'order_number', 'status', 'total',
-        'payment_method', 'shipping_address', 'billing_address'
-    ];
+    use HasFactory;
 
-    protected $casts = [
-        'shipping_address' => 'array',
-        'billing_address' => 'array'
+    const STATUS_PENDING = 'pending';
+    const STATUS_PROCESSING = 'processing';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_CANCELLED = 'cancelled';
+
+    protected $fillable = [
+        'user_id',
+        'order_number',
+        'status',
+        'total',
+        'payment_method',
+        'shipping_address',
+        'billing_address'
     ];
 
     public function user()
@@ -26,8 +34,13 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    public function payment()
+    public function payments()
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasMany(Payment::class);
+    }
+
+    public function generateOrderNumber()
+    {
+        return 'ORD-' . strtoupper(uniqid());
     }
 }

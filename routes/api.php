@@ -24,60 +24,105 @@ use App\Http\Middleware\RoleMiddleware;
     Route::get('/categories', [CategoryController::class, 'index']);  // GET (index - list all) -- public
     Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
-///////// Routes with auth //////////////////////
-    Route::middleware('auth:sanctum')->group(function () 
+Route::middleware('auth:sanctum')->group(function () 
         {
             Route::post('/logout', [AuthController::class, 'logout']);
+        });
 
-        /// to get the profile info
-            Route::post('/profile', [AuthController::class, 'profile']);
-
-        /// to update into to profile ///
-            Route::put('/profile', [AuthController::class, 'updateProfile']);
+////Admin Routes /////
+    Route::prefix('admin')->middleware(['auth:sanctum', RoleMiddleware::class.':admin'])->group(function () {
+            
+        /// Product Management
+            Route::get('/products', [ProductController::class, 'index']);
+            Route::get('/products/{product}', [ProductController::class, 'show']);
+            Route::post('/products', [ProductController::class, 'store']);  
+            Route::put('/products/{product}', [ProductController::class, 'update']);  
+            Route::delete('/products/{product}', [ProductController::class, 'destroy']);  
         
+        /// Category Management
+            Route::get('/categories', [CategoryController::class, 'index']);
+            Route::get('/categories/{category}', [CategoryController::class, 'show']);
+            Route::post('/categories', [CategoryController::class, 'store']);
+            Route::put('/categories/{category}', [CategoryController::class, 'update']);
+            Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
 
+        /// Add images to products
+            Route::post('/products/{product}/images', [ProductController::class, 'storeImages']);
+            Route::put('/product-images/{image}/set-main', [ProductImageController::class, 'setMainImage']);
+            Route::delete('/product-images/{image}', [ProductImageController::class, 'destroy']);
+        
+        /// Cart Management
+            Route::get('/Carts', [CartController::class, 'index']);
+
+        /// Order Management
+            Route::get('/orders', [OrderController::class, 'index']);
+            Route::get('/order/{id}', [OrderController::class, 'show']);
+            //Route::post('/orders', [OrderController::class, 'store']);
+            //Route::put('/order/{id}/cancel', [OrderController::class, 'cancel']);
+            
+        /// Payment management
+            Route::get('/payments', [PaymentController::class, 'index']);
+            Route::get('/payment/{id}', [PaymentController::class, 'show']);
+            Route::put('/payment/{id}/status', [PaymentController::class, 'updatePaymentStatus']);
+        });
+
+
+////Seller Routes /////
+    Route::prefix('seller')->middleware(['auth:sanctum', RoleMiddleware::class.':seller'])->group(function () {
+        
+        //// Profile Management
+            Route::get('/profile', [AuthController::class, 'profile']);
+            Route::put('/updateprofile', [AuthController::class, 'updateProfile']);
+
+        //// Product Management
+            Route::get('/products', [ProductController::class, 'index']);
+            Route::post('/products', [ProductController::class, 'store']);  
+            Route::get('/products/{product}', [ProductController::class, 'show']);
+            Route::put('/products/{product}', [ProductController::class, 'update']);  
+            Route::delete('/products/{product}', [ProductController::class, 'destroy']);  
+
+        /// Product Images routes
             Route::post('/products/{product}/images', [ProductController::class, 'storeImages']);
             Route::put('/product-images/{image}/set-main', [ProductImageController::class, 'setMainImage']);
             Route::delete('/product-images/{image}', [ProductImageController::class, 'destroy']);
 
-            Route::get('/carts/{cart}', [CartController::class, 'show']);
-            Route::post('/carts/{cart}/items', [CartController::class, 'addItem']);
-            Route::delete('/carts/{cart}/items/{item}', [CartController::class, 'removeItem']);
+        // Order Management
+            Route::get('/orders', [OrderController::class, 'sellerIndex']);
+            Route::get('/orders/{id}', [OrderController::class, 'sellerShow']);
+            Route::put('/order/{id}/status', [OrderController::class, 'sellerUpdateStatus']);
+        
+        /// payment Management 
+            Route::get('/payment', [PaymentController::class, 'index']);
+            Route::get('/paymnet/{id}', [PaymentController::class, 'show']);
+        });
+
+
+////Customer Routes /////
+    Route::prefix('customer')->middleware(['auth:sanctum', RoleMiddleware::class.':customer'])->group(function () {
+        
+        //// Profile Management
+            Route::get('/profile', [AuthController::class, 'profile']);
+            Route::put('/updateprofile', [AuthController::class, 'updateProfile']);
+        
+        //// Product Management
+            Route::get('/products', [ProductController::class, 'index']);
+            Route::get('/products/{product}', [ProductController::class, 'show']);
             
-            // Order routes
-            Route::apiResource('orders', OrderController::class)->except(['update', 'destroy']);
-            
+        
+        //// Order Management
+            Route::get('/orders', [OrderController::class, 'index']);
+            Route::get('/order/{id}', [OrderController::class, 'show']);
+            Route::post('/orders', [OrderController::class, 'store']);
+            Route::put('/order/{id}/cancel', [OrderController::class, 'cancel']);
+
+        //// Cart Management
+            Route::get('/carts', [CartController::class, 'index']);
+            Route::post('/cart/add-item', [CartController::class, 'addItem']);
+            Route::delete('/cart/remove-item/{id}', [CartController::class, 'removeItem']);
+            Route::delete('/cart/clear', [CartController::class, 'clearCart']);
+    
             // Payment routes
-            Route::post('/orders/{order}/payment', [PaymentController::class, 'store']);
-
+            Route::get('/payments', [PaymentController::class, 'index']);
+            Route::get('/payment/{id}', [PaymentController::class, 'show']);
+            Route::put('/{id}/status', [PaymentController::class, 'updatePaymentStatus']);
         });
-
-
-/////////// Admin routes////////////
-        Route::prefix('admin')->group(function () {   
-            // POST /admin/categories (store)
-                Route::post('/categories', [CategoryController::class, 'store'])->middleware(['auth:sanctum', RoleMiddleware::class.':admin']);
-                
-            // PUT/PATCH /admin/categories/{id} (update)
-                Route::put('/categories/{category}', [CategoryController::class, 'update'])->middleware(['auth:sanctum', RoleMiddleware::class.':admin']);
-                
-            // DELETE /admin/categories/{id} (destroy)
-                Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->middleware(['auth:sanctum', RoleMiddleware::class.':admin']);
-        });
-
-
-/////////// Admin and seller routes////////////
-        Route::middleware(['auth:sanctum', RoleMiddleware::class.':seller,admin'])->group(function () {
-            Route::post('/products', [ProductController::class, 'store']);  // POST (create) -- (seller/admin)
-            Route::put('/products/{product}', [ProductController::class, 'update']);  // PUT (update) -- (seller/admin)
-            Route::delete('/products/{product}', [ProductController::class, 'destroy']);  // DELETE (destroy) -- (seller/admin)
-            
-            // Product Images routes
-            Route::post('/products/{product}/images', [ProductController::class, 'storeImages']);
-            Route::put('/product-images/{image}/set-main', [ProductImageController::class, 'setMainImage']);
-            Route::delete('/product-images/{image}', [ProductImageController::class, 'destroy']);
-        });
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');

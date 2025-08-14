@@ -3,68 +3,53 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Payment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
-    
     public function index()
     {
-        //
+        $payments = Payment::with(['order'])
+            ->whereHas('order', function($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->latest()
+            ->get();
+
+        return response()->json($payments);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request, Order $order)
+    public function show($id)
     {
-        $this->authorize('update', $order);
+        $payment = Payment::with(['order'])
+            ->whereHas('order', function($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->findOrFail($id);
 
+        return response()->json($payment);
+    }
+
+      public function updatePaymentStatus(Request $request, $id)
+    {
         $request->validate([
-            'transaction_id' => 'required|string',
-            'payment_method' => 'required|string',
-            'amount' => 'required|numeric'
+            'status' => 'required|in:pending,success,failed,refunded',
         ]);
 
-        $payment = $order->payment()->create([
-            'transaction_id' => $request->transaction_id,
-            'amount' => $request->amount,
-            'payment_method' => $request->payment_method,
-            'status' => 'completed'
-        ]);
+        $payment = Payment::whereHas('order', function($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->findOrFail($id);
 
-        $order->update(['status' => 'processing']);
+        $payment->update(['status' => $request->status]);
 
-        return response()->json($payment, 201);
-    }
+        if ($request->status == Payment::STATUS_SUCCESS) {
+            $payment->order()->update(['status' => Order::STATUS_PROCESSING]);
+        }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json(['message' => 'Payment status updated']);
     }
 }

@@ -16,12 +16,12 @@ class ProductController extends Controller
     {
         $this->middleware('auth:sanctum')->except(['index', 'show']);
 
-        $this->middleware(function ($request, $next) {
-            if ($request->user()->role->name !== 'admin') {
-                abort(403, 'Unauthorized');
-            }
-            return $next($request);
-        })->except(['index', 'show']); // Apply to all methods except these
+        // $this->middleware(function ($request, $next) {
+        //     if ($request->user()->role->name !== 'admin') {
+        //         abort(403, 'Unauthorized');
+        //     }
+        //     return $next($request);
+        // })->except(['index', 'show']); // Apply to all methods except these
     }
     public function index(Request $request)
     {

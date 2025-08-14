@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
 
+    
+
     ////////////////////////////////////////////////Register Function /////////////////////////////////////
     public function register(Request $request)
     {
@@ -80,6 +82,11 @@ class AuthController extends Controller
     }
 
 ////////////////////////////////////////////////Profile Function /////////////////////////////////////
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->only(['updateProfile','profile']);
+    }
 
     public function updateProfile(Request $request)
     {
